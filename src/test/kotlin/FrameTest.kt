@@ -1,6 +1,7 @@
+import Frame.Checksum
+import Frame.Segment
 import org.amshove.kluent.shouldBeEqualTo
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 
@@ -56,14 +57,8 @@ import org.junit.jupiter.params.provider.CsvSource
  */
 class FrameTest {
     @Test
-    fun `given message larger than 99, when frame is created, then IllegalStateException should be thrown`() {
-        val msg = "N".repeat(100)
-        assertThrows<IllegalStateException>("Should throw an Exception") { Frame(msg) }
-    }
-
-    @Test
     fun `given empty message, when frame access segment length, then length of 00 should be returned`() {
-        Frame("").segment shouldBeEqualTo "00"
+        Segment.length(Frame("").message) shouldBeEqualTo "00"
     }
 
     @ParameterizedTest
@@ -79,12 +74,13 @@ class FrameTest {
     fun `given frame with x msg, when frame access segment length, then frame should return correct length`(
         msg: String, expected: String
     ) {
-        Frame(msg.trim()).segment shouldBeEqualTo expected.trim()
+        Segment.length(Frame(msg.trim()).message) shouldBeEqualTo expected.trim()
     }
 
     @Test
     fun `given empty message, when frame access checksum value, then value of 00 should be returned`() {
-        Frame("").checksum shouldBeEqualTo "20"
+        val frame = Frame("")
+        Checksum.calculate(frame.type, frame.message) shouldBeEqualTo "20"
     }
 
     @ParameterizedTest
@@ -100,7 +96,8 @@ class FrameTest {
     fun `given frame with x msg, when frame access checksum value, then frame should return correct length`(
         msg: String, type: String, expected: String
     ) {
-        Frame(msg.trim(), Type.valueOf(type)).checksum shouldBeEqualTo expected.trim()
+        val frame = Frame(msg.trim(), Type.valueOf(type))
+        Checksum.calculate(frame.type, frame.message) shouldBeEqualTo expected.trim()
     }
 
     @Test

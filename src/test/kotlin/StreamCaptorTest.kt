@@ -9,6 +9,14 @@ import java.io.ByteArrayOutputStream
 import java.io.PrintStream
 import java.util.*
 
+/**
+ * This is a test support to verify my stdout and scanner value capturing techniques that
+ * I use throughout my acceptance testing environment.
+ *
+ * @property standardOut java.io.PrintStream
+ * @property scanner Scanner
+ * @property outputStreamCaptor ByteArrayOutputStream
+ */
 class StreamCaptorTest {
     private val standardOut = System.out
     private lateinit var scanner: Scanner
