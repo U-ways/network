@@ -1,4 +1,5 @@
 import Frame.Companion.EMPTY_FRAME
+import Frame.Segment.MAX_SEGMENT_LENGTH
 import io.mockk.every
 import io.mockk.mockkClass
 import org.amshove.kluent.shouldBeEqualTo
@@ -33,8 +34,15 @@ class SenderTest {
     private fun getOutput(): String = outputStreamCaptor.toString().trim()
 
     @Test
-    fun `given MTU smaller than 10, when sender starts, it should throw IllegalStateException`() {
-        assertThrows<IllegalStateException>() { Sender(9, scanner).start() }
+    fun `given MTU smaller than minimum frame size, when sender starts, it should throw IllegalStateException`() {
+        assertThrows<IllegalStateException>() { Sender(EMPTY_FRAME.length - 1, scanner).start() }
+    }
+
+    @Test
+    fun `given MTU larger than supported size, when sender starts, it should throw IllegalStateException`() {
+        val supportedSize = MAX_SEGMENT_LENGTH + EMPTY_FRAME.length
+
+        assertThrows<IllegalStateException>() { Sender(supportedSize + 1, scanner).start() }
     }
 
     @Test
@@ -65,7 +73,7 @@ class SenderTest {
     }
 
     @Test
-    fun `given MessageSender, when message sender sends msg as input message, then frame should contain hello`() {
+    fun `given sender, when message sender sends msg as input message, then frame should contain hello`() {
         val msg = randomUUID().toString().substring(0, 5)
 
         every { scanner.nextLine() } returns msg
@@ -76,7 +84,7 @@ class SenderTest {
     }
 
     @Test
-    fun `given MessageSender with 20 MTU, when message sender sends hi as input message, then sender should stdout F~02~Hi~d3`() {
+    fun `given sender with 20 MTU, when message sender sends hi as input message, then sender should stdout correct frame`() {
         val msg = "Hi"
         val expected = "[F~02~Hi~d3]"
 
@@ -88,7 +96,7 @@ class SenderTest {
     }
 
     @Test
-    fun `given MessageSender with 20 MTU, when message sender sends an empty message, then sender should segment the frame length with 00`() {
+    fun `given sender with 20 MTU, when message sender sends an empty message, then sender should segment the frame length with 00`() {
         val msg = ""
         val expected = "[F~00~~20]"
 
@@ -100,7 +108,7 @@ class SenderTest {
     }
 
     @Test
-    fun `given MessageSender with 20 MTU, when sender sends a message fits in one frame, then sender should not segment the frame`() {
+    fun `given sender with 20 MTU, when sender sends a message fits in one frame, then sender should not segment the frame`() {
         val msg = "hello"
         val expected = "[F~05~hello~39]"
 
@@ -112,7 +120,7 @@ class SenderTest {
     }
 
     @Test
-    fun `given MessageSender with 20 MTU, when message sender sends a that doesn't fit in one frame, then sender should segment the frame`() {
+    fun `given sender with 20 MTU, when message sender sends a that doesn't fit in one frame, then sender should segment the frame`() {
         val msg = "The Byte Count of Monte Cristo"
         val expected = "[D~10~The Byte C~57]\n" + "[D~10~ount of Mo~b6]\n" + "[F~10~nte Cristo~fc]"
 
@@ -124,7 +132,7 @@ class SenderTest {
     }
 
     @Test
-    fun `given MessageSender with 20 MTU, when message sender sends a that doesn't fit in one frame with odd length, then sender should segment the frame correctly`() {
+    fun `given sender with 20 MTU, when message sender sends a that doesn't fit in one frame with odd length, then sender should segment the frame correctly`() {
         val msg = "Who Framed Roger Rabbit"
         val expected = "[D~10~Who Framed~bc]\n" + "[D~10~ Roger Rab~73]\n" + "[F~03~bit~62]"
 
@@ -135,16 +143,28 @@ class SenderTest {
         getOutput() shouldBeEqualTo expected
     }
 
+    @Test
+    fun `given frame as a message, when sender sends frame as input message, then sender should stdout correct frame`() {
+        val msg = "[F~02~Hi~d3]"
+        val expected = "[F~12~[F~02~Hi~d3]~45]"
+
+        every { scanner.nextLine() } returns msg
+
+        Sender(50, scanner).start()
+
+        getOutput() shouldBeEqualTo expected
+    }
+
     @ParameterizedTest
     @MethodSource("messageSenderArgs")
-    fun `given MessageSender with X MTU, when message sender sends Y msg, then sender should stdout Z frame`(
-        mtu: Int, msg: String, expected: String
+    fun `given sender with X MTU, when sender sends Y message, then sender should stdout Z frame`(
+        mtu: Int, message: String, frame: String
     ) {
-        every { scanner.nextLine() } returns msg
+        every { scanner.nextLine() } returns message
 
         Sender(mtu, scanner).start()
 
-        getOutput() shouldBeEqualTo expected
+        getOutput() shouldBeEqualTo frame
     }
 
     // restore Stdout to its original state when test terminates:
