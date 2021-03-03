@@ -1,5 +1,4 @@
 import Frame.Companion.EMPTY_FRAME
-import Frame.Segment.MAX_SEGMENT_LENGTH
 import io.mockk.every
 import io.mockk.mockkClass
 import org.amshove.kluent.shouldBeEqualTo
@@ -40,20 +39,13 @@ class SenderTest {
 
     @Test
     fun `given MTU larger than supported size, when sender starts, it should throw IllegalStateException`() {
-        val supportedSize = MAX_SEGMENT_LENGTH + EMPTY_FRAME.length
+        val supportedSize = Frame.MTU
 
         assertThrows<IllegalStateException>() { Sender(supportedSize + 1, scanner).start() }
     }
 
     @Test
-    fun `given MTU size of 10, when sender sends a non-empty message, it should throw IllegalStateException`() {
-        every { scanner.nextLine() } returns "${randomUUID()}".substring(0..15)
-
-        assertThrows<IllegalStateException>() { Sender(10, scanner).start() }
-    }
-
-    @Test
-    fun `given MTU size of 10, when sender sends an empty message, it should return an empty frame`() {
+    fun `given MTU size of minimum frame size, when sender sends an empty message, it should return an empty frame`() {
         val emptyMsg = ""
 
         every { scanner.nextLine() } returns emptyMsg
@@ -61,6 +53,13 @@ class SenderTest {
         Sender(10, scanner).start()
 
         getOutput() shouldBeEqualTo EMPTY_FRAME
+    }
+
+    @Test
+    fun `given MTU size of minimum frame size, when sender sends a non-empty message, it should throw IllegalStateException`() {
+        every { scanner.nextLine() } returns "${randomUUID()}".substring(0..15)
+
+        assertThrows<IllegalStateException>() { Sender(10, scanner).start() }
     }
 
     @Test

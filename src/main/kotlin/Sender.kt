@@ -1,5 +1,4 @@
 import Frame.Companion.EMPTY_FRAME
-import Frame.Segment.MAX_SEGMENT_LENGTH
 import Type.D
 import Type.F
 import java.util.*
@@ -23,7 +22,7 @@ class Sender(
      */
     override fun start() {
         check(mtu >= EMPTY_FRAME.length) { "MTU size is too small to transmit a message. (minimum MTU size allowed: ${EMPTY_FRAME.length})" }
-        check(mtu <= MAX_SEGMENT_LENGTH + EMPTY_FRAME.length) { "MTU size is not supported. (maximum MTU size allowed: ${MAX_SEGMENT_LENGTH + EMPTY_FRAME.length})" }
+        check(mtu <= Frame.MTU) { "MTU size is not supported. (maximum MTU size allowed: ${Frame.MTU})" }
 
         stdin.nextLine().apply {
             if (this == null) error("No message received.")

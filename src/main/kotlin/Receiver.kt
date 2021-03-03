@@ -1,6 +1,5 @@
 import Extractor.extract
 import Frame.Companion.EMPTY_FRAME
-import Frame.Segment.MAX_SEGMENT_LENGTH
 import java.util.*
 
 /**
@@ -21,7 +20,7 @@ class Receiver(
      */
     override fun start() {
         check(mtu >= EMPTY_FRAME.length) { "MTU size is too small to receive a message. (minimum MTU size allowed: ${EMPTY_FRAME.length})" }
-        check(mtu <= MAX_SEGMENT_LENGTH + EMPTY_FRAME.length) { "MTU size is not supported. (maximum MTU size allowed: ${MAX_SEGMENT_LENGTH + EMPTY_FRAME.length})" }
+        check(mtu <= Frame.MTU) { "MTU size is not supported. (maximum MTU size allowed: ${Frame.MTU})" }
 
         println(
             StringBuilder().apply {

@@ -1,6 +1,5 @@
 import Frame.Checksum.calculate
 import Frame.Companion.EMPTY_FRAME
-import Frame.Segment.MAX_SEGMENT_LENGTH
 import Type.F
 import io.mockk.every
 import io.mockk.mockkClass
@@ -39,7 +38,7 @@ class ReceiverTest {
 
     @Test
     fun `given MTU larger than supported size, when sender starts, it should throw IllegalStateException`() {
-        val supportedSize = MAX_SEGMENT_LENGTH + EMPTY_FRAME.length
+        val supportedSize = Frame.MTU
 
         assertThrows<IllegalStateException>() { Receiver(supportedSize + 1, scanner).start() }
     }

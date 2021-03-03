@@ -1,6 +1,7 @@
 import Frame.Delimiter.END
 import Frame.Delimiter.FIELD
 import Frame.Delimiter.START
+import Frame.Segment.MAX_SEGMENT_LENGTH
 import Type.F
 
 data class Frame(
@@ -19,6 +20,8 @@ data class Frame(
                 .plus(Checksum.calculate(F, emptyMessage))
                 .plus(END)
         }
+
+        val MTU = MAX_SEGMENT_LENGTH + EMPTY_FRAME.length
     }
 
     object Delimiter {
