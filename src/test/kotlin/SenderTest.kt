@@ -1,3 +1,4 @@
+import Frame.Companion.EMPTY_FRAME
 import io.mockk.every
 import io.mockk.mockkClass
 import org.amshove.kluent.shouldBeEqualTo
@@ -32,8 +33,35 @@ class SenderTest {
     private fun getOutput(): String = outputStreamCaptor.toString().trim()
 
     @Test
-    fun `given MTU larger than 99, when sender starts, it should throw IllegalStateException`() {
-        assertThrows<IllegalStateException>("Should throw IllegalStateException") { Sender(100, scanner).start() }
+    fun `given MTU smaller than 10, when sender starts, it should throw IllegalStateException`() {
+        assertThrows<IllegalStateException>() { Sender(9, scanner).start() }
+    }
+
+    @Test
+    fun `given MTU size of 10, when sender sends a non-empty message, it should throw IllegalStateException`() {
+        every { scanner.nextLine() } returns "${randomUUID()}".substring(0..15)
+
+        assertThrows<IllegalStateException>() { Sender(10, scanner).start() }
+    }
+
+    @Test
+    fun `given MTU size of 10, when sender sends an empty message, it should return an empty frame`() {
+        val emptyMsg = ""
+
+        every { scanner.nextLine() } returns emptyMsg
+
+        Sender(10, scanner).start()
+
+        getOutput() shouldBeEqualTo EMPTY_FRAME
+    }
+
+    @Test
+    fun `given a null message, when sender sends nul message, it should throw IllegalStateException`() {
+        val emptyMsg = null
+
+        every { scanner.nextLine() } returns emptyMsg
+
+        assertThrows<IllegalStateException>() { Sender(10, scanner).start() }
     }
 
     @Test
@@ -60,7 +88,7 @@ class SenderTest {
     }
 
     @Test
-    fun `given MessageSender with 20 MTU, when message sender sends an empty message, then sender should segment the frame length with 0`() {
+    fun `given MessageSender with 20 MTU, when message sender sends an empty message, then sender should segment the frame length with 00`() {
         val msg = ""
         val expected = "[F~00~~20]"
 
@@ -72,7 +100,7 @@ class SenderTest {
     }
 
     @Test
-    fun `given MessageSender with 20 MTU, when message sender sends a that fits in one frame, then sender should not segment the frame`() {
+    fun `given MessageSender with 20 MTU, when sender sends a message fits in one frame, then sender should not segment the frame`() {
         val msg = "hello"
         val expected = "[F~05~hello~39]"
 
@@ -84,25 +112,25 @@ class SenderTest {
     }
 
     @Test
-    fun `given MessageSender with 10 MTU, when message sender sends a that doesn't fit in one frame, then sender should segment the frame`() {
+    fun `given MessageSender with 20 MTU, when message sender sends a that doesn't fit in one frame, then sender should segment the frame`() {
         val msg = "The Byte Count of Monte Cristo"
         val expected = "[D~10~The Byte C~57]\n" + "[D~10~ount of Mo~b6]\n" + "[F~10~nte Cristo~fc]"
 
         every { scanner.nextLine() } returns msg
 
-        Sender(10, scanner).start()
+        Sender(20, scanner).start()
 
         getOutput() shouldBeEqualTo expected
     }
 
     @Test
-    fun `given MessageSender with 10 MTU, when message sender sends a that doesn't fit in one frame with odd length, then sender should segment the frame correctly`() {
+    fun `given MessageSender with 20 MTU, when message sender sends a that doesn't fit in one frame with odd length, then sender should segment the frame correctly`() {
         val msg = "Who Framed Roger Rabbit"
         val expected = "[D~10~Who Framed~bc]\n" + "[D~10~ Roger Rab~73]\n" + "[F~03~bit~62]"
 
         every { scanner.nextLine() } returns msg
 
-        Sender(10, scanner).start()
+        Sender(20, scanner).start()
 
         getOutput() shouldBeEqualTo expected
     }
@@ -129,12 +157,12 @@ class SenderTest {
         @JvmStatic
         private fun messageSenderArgs() = Stream.of(
             of(
-                40,
+                50,
                 "This is a longer message and will require more than one frame",
                 "[D~40~This is a longer message and will requir~c6]\n[F~21~e more than one frame~b3]"
             ),
             of(
-                40,
+                50,
                 "¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾",
                 "[D~40~¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾~d2]\n[D~40~¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾~d2]\n[D~40~¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾~d2]\n[F~31~¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾¾~26]"
             )

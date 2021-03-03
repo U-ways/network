@@ -1,7 +1,6 @@
-import Frame.Segment.MAX_SEGMENT_LENGTH
+import Frame.Companion.EMPTY_FRAME
 import Type.D
 import Type.F
-import java.lang.System.err
 import java.util.*
 import kotlin.math.ceil
 
@@ -22,18 +21,25 @@ class Sender(
      * Report any errors on standard error.
      */
     override fun start() {
-        check(mtu < 100) { "MTU size should be between 0 and $MAX_SEGMENT_LENGTH\n" }
+        check(mtu >= 10) { "ERROR: MTU size is too small to transmit a message. (minimum MTU size allowed: 10)\n" }
 
         stdin.nextLine().apply {
-            when {
-                this == null -> err.println("ERROR: No message received.")
-                length <= mtu -> println(Frame(this))
+            if (this == null) error("ERROR: No message received.")
+            if (mtu == 10 && isNotEmpty()) error("ERROR: MTU size is too small to transmit current message.")
+            else when {
+                EMPTY_FRAME.length + length <= mtu -> println(Frame(this))
                 else -> {
-                    val numberOfFrames = ceil(length / mtu.toDouble()).toInt()
+                    val numberOfFrames = ceil(length / (mtu.toDouble() - EMPTY_FRAME.length)).toInt()
+
                     (0 until numberOfFrames).forEach { n ->
                         val lastFrame = n == numberOfFrames - 1
-                        val start = n * mtu
-                        val end = start.plus(if (lastFrame && length % mtu != 0) length % mtu else mtu)
+                        val start = n.times(mtu.minus(EMPTY_FRAME.length))
+                        val end = start.plus(
+                            if (lastFrame && length % mtu != 0)
+                                length - ((numberOfFrames - 1) * mtu.minus(EMPTY_FRAME.length))
+                            else
+                                mtu.minus(EMPTY_FRAME.length)
+                        )
                         println(Frame(substring(start, end), if (lastFrame) F else D))
                     }
                 }
