@@ -1,5 +1,5 @@
 import Frame.Checksum.calculate
-import Frame.Companion.EMPTY_FRAME
+import Frame.Companion.FRAME_OVERHEAD
 import Type.F
 import io.mockk.every
 import io.mockk.mockkClass
@@ -32,8 +32,8 @@ class ReceiverTest {
     private fun getOutput(): String = outputStreamCaptor.toString().trim()
 
     @Test
-    fun `given MTU smaller than 10, when receiver starts, it should throw IllegalStateException`() {
-        assertThrows<IllegalStateException>() { Receiver(EMPTY_FRAME.length - 1, scanner).start() }
+    fun `given MTU smaller than FRAME_OVERHEAD, when receiver starts, it should throw IllegalStateException`() {
+        assertThrows<IllegalStateException>() { Receiver(FRAME_OVERHEAD - 1, scanner).start() }
     }
 
     @Test

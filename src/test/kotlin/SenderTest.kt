@@ -1,4 +1,5 @@
 import Frame.Companion.EMPTY_FRAME
+import Frame.Companion.FRAME_OVERHEAD
 import io.mockk.every
 import io.mockk.mockkClass
 import org.amshove.kluent.shouldBeEqualTo
@@ -33,8 +34,8 @@ class SenderTest {
     private fun getOutput(): String = outputStreamCaptor.toString().trim()
 
     @Test
-    fun `given MTU smaller than minimum frame size, when sender starts, it should throw IllegalStateException`() {
-        assertThrows<IllegalStateException>() { Sender(EMPTY_FRAME.length - 1, scanner).start() }
+    fun `given MTU smaller than FRAME_OVERHEAD, when sender starts, it should throw IllegalStateException`() {
+        assertThrows<IllegalStateException>() { Sender(FRAME_OVERHEAD - 1, scanner).start() }
     }
 
     @Test

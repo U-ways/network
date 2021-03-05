@@ -21,7 +21,9 @@ data class Frame(
                 .plus(END)
         }
 
-        val MTU = MAX_SEGMENT_LENGTH + EMPTY_FRAME.length
+        val FRAME_OVERHEAD = EMPTY_FRAME.length
+
+        val MTU = MAX_SEGMENT_LENGTH + FRAME_OVERHEAD
     }
 
     object Delimiter {

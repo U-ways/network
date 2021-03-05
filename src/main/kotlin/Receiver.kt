@@ -1,5 +1,5 @@
 import Extractor.extract
-import Frame.Companion.EMPTY_FRAME
+import Frame.Companion.FRAME_OVERHEAD
 import java.util.*
 
 /**
@@ -19,7 +19,7 @@ class Receiver(
      * Report any errors on stderr.
      */
     override fun start() {
-        check(mtu >= EMPTY_FRAME.length) { "MTU size is too small to receive a message. (minimum MTU size allowed: ${EMPTY_FRAME.length})" }
+        check(mtu >= FRAME_OVERHEAD) { "MTU size is too small to receive a message. (minimum MTU size allowed: ${FRAME_OVERHEAD})" }
         check(mtu <= Frame.MTU) { "MTU size is not supported. (maximum MTU size allowed: ${Frame.MTU})" }
 
         println(
