@@ -4,6 +4,7 @@ import io.mockk.every
 import io.mockk.mockkClass
 import io.mockk.verify
 import org.amshove.kluent.shouldBeEqualTo
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -21,6 +22,7 @@ import java.util.stream.Stream
 
 
 class ReceiverTest {
+    private val standardOut = System.out
     private lateinit var scanner: Scanner
     private lateinit var outputStreamCaptor: ByteArrayOutputStream
 
@@ -210,6 +212,12 @@ class ReceiverTest {
         Receiver(50, scanner).start()
 
         getOutput() shouldBeEqualTo message
+    }
+
+    // restore Stdout to its original state when test terminates:
+    @AfterEach
+    fun tearDown() {
+        System.setOut(standardOut)
     }
 
     companion object {
