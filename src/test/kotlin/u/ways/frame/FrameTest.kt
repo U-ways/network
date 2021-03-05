@@ -1,9 +1,11 @@
-import Frame.Checksum
-import Frame.Segment
+package u.ways.frame
+
 import org.amshove.kluent.shouldBeEqualTo
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import u.ways.frame.Frame.Checksum
+import u.ways.frame.Frame.Segment
 
 class FrameTest {
     @Test

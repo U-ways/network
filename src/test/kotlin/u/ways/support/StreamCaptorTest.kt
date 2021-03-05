@@ -1,3 +1,5 @@
+package u.ways.support
+
 import io.mockk.every
 import io.mockk.mockkClass
 import org.amshove.kluent.shouldBeEqualTo

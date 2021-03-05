@@ -1,8 +1,10 @@
-import Frame.Checksum.calculate
-import Frame.Delimiter.END
-import Frame.Delimiter.FIELD
-import Frame.Delimiter.START
-import Type.*
+package u.ways.frame
+
+import u.ways.frame.Frame.Checksum.calculate
+import u.ways.frame.Frame.Delimiter.END
+import u.ways.frame.Frame.Delimiter.FIELD
+import u.ways.frame.Frame.Delimiter.START
+import u.ways.frame.Type.*
 
 object Extractor {
     fun extract(frame: String, mtu: Int): Pair<String, Boolean> {

@@ -1,5 +1,5 @@
-import Frame.Companion.EMPTY_FRAME
-import Frame.Companion.FRAME_OVERHEAD
+package u.ways.runner
+
 import io.mockk.every
 import io.mockk.mockkClass
 import org.amshove.kluent.shouldBeEqualTo
@@ -11,6 +11,9 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments.of
 import org.junit.jupiter.params.provider.MethodSource
+import u.ways.frame.Frame
+import u.ways.frame.Frame.Companion.EMPTY_FRAME
+import u.ways.frame.Frame.Companion.FRAME_OVERHEAD
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
 import java.util.*

@@ -1,6 +1,5 @@
-import Frame.Checksum.calculate
-import Frame.Companion.FRAME_OVERHEAD
-import Type.F
+package u.ways.runner
+
 import io.mockk.every
 import io.mockk.mockkClass
 import io.mockk.verify
@@ -11,6 +10,10 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments.of
 import org.junit.jupiter.params.provider.MethodSource
+import u.ways.frame.Frame
+import u.ways.frame.Frame.Checksum.calculate
+import u.ways.frame.Frame.Companion.FRAME_OVERHEAD
+import u.ways.frame.Type.F
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
 import java.util.*

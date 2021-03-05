@@ -1,8 +1,10 @@
-import Frame.Delimiter.END
-import Frame.Delimiter.FIELD
-import Frame.Delimiter.START
-import Frame.Segment.MAX_SEGMENT_LENGTH
-import Type.F
+package u.ways.frame
+
+import u.ways.frame.Frame.Delimiter.END
+import u.ways.frame.Frame.Delimiter.FIELD
+import u.ways.frame.Frame.Delimiter.START
+import u.ways.frame.Frame.Segment.MAX_SEGMENT_LENGTH
+import u.ways.frame.Type.F
 
 data class Frame(
     val message: String,
