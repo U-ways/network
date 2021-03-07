@@ -22,16 +22,16 @@ class MainTest {
 
     @Test
     fun `given not enough number of arguments, when main is invoked, it should warn user using stderr`() {
-        val singleCommand: Array<String> = arrayOf("-R")
+        val singleCommand: Array<String> = emptyArray()
 
         assertDoesNotThrow() { Main.main(singleCommand) }
 
-        getError() shouldContain "ERROR: Not enough commands arguments passed"
+        getError() shouldContain "ERROR: Not enough command arguments passed."
     }
 
     @Test
     fun `given incorrect MTU value, when main is invoked, it should warn user using stderr`() {
-        val incorrectMtuCommand: Array<String> = arrayOf("-R", "-mtu", "invalid")
+        val incorrectMtuCommand: Array<String> = arrayOf("-R", "--mtu", "invalid")
 
         assertDoesNotThrow() { Main.main(incorrectMtuCommand) }
 
@@ -40,11 +40,11 @@ class MainTest {
 
     @Test
     fun `given an incorrect runner command, when main is invoked with the wrong command, it warn user using stderr and not throw any exceptions`() {
-        val incorrectRunnerCommand: Array<String> = arrayOf("-invalid", "-mtu", "20")
+        val incorrectRunnerCommand: Array<String> = arrayOf("-invalid", "--mtu", "20")
 
         assertDoesNotThrow() { Main.main(incorrectRunnerCommand) }
 
-        getError() shouldContain "ERROR: Unknown runner argument given: [-invalid]."
+        getError() shouldContain "ERROR: Unknown argument given: [-invalid]."
     }
 
     @AfterEach
