@@ -2,14 +2,69 @@
 
 A simple data link protocol that implements framing, error detection, message segmentation and reassembly.
 
-### Usage Example
+### Command Manual
 
 ```
-# Run PPD as a Message Sender host with MTU of 20
-ppd -S --mtu 20
+NAME
+  
+  ppd - penny plain data link protocol
 
-# Run PPD as a Message Receiver host with MTU of 100
-ppd -R --mtu 100
+SYNOPSIS
+  
+  ppd -[S|R] --mtu [N]
+  ppd -help
+
+DESCRIPTION
+  
+  send or receive messages using penny plain data link protocol
+  
+  -[S|R]
+         The type of runner this host is:
+           S = Message Sender
+           R = Message Receiver
+
+  --mtu [N]
+         The maximum transfer unit (MTU)
+           A non-negative decimal value.
+  
+  -help  
+         prints this message
+
+USAGE EXAMPLE
+
+  ppd -R --mtu 20  # Run PPD as a sender host with MTU of 20
+  ppd -R --mtu 20  # Run PPD as a receiver host with MTU of 20
+```
+
+### Usage Example
+
+There are a couple of ways to use this implementation:
+
+#### 1. Simply calling the command with the right argument and providing manual input
+
+```
+ppd -S --mtu 20 # Run PPD as a sender host with MTU of 20
+hello           # => [F~05~hello~39]
+
+ppd -R --mtu 20 # Run PPD as a receiver host with MTU of 20
+[F~05~hello~39] # => hello
+```
+
+#### 2. Redirect the command standard input to a text file containing the frames/message
+
+```
+ppd -S --mtu 20 < message.txt # sender encodes message text based on ppd specification 
+ppd -R --mtu 20 < frames.txt  # receiver decodes frames text based on ppd specification
+```
+
+#### 3. Pipe the sender standard output to the receiver standard input
+
+```
+ppd -S --mtu 20 | ppd -R --mtu 20  # Sender will pipe the frame to receiver and receiver will decode the frame
+hello                              # => hello
+
+# You can also pipe a text file as sender input:
+cat message.txt | ppd -S --mtu 20 | ppd -R --mtu 20 
 ```
 
 ### Specification
@@ -36,7 +91,7 @@ The frame's regex can be described as follows:
 - The segment length and checksum fields always contain two digits. Segment length values less than 10 have a leading
   zero and checksum values less than 16 have a leading zero (e.g. 0c).
 
-- A segment length of zero (00) means there is no message text and the message segment field is empty
+- A segment length of zero (00) means there is no message text, and the message segment field is empty
   (i.e. there's nothing between the two field delimiters, which must still be present).
 
 - The segment length must not exceed 99, irrespective of the MTU (see below).
@@ -68,33 +123,7 @@ message normally.
 2. Execute `install` script. (i.e. `./install`)
 3. Run jar command to create a new archive. (i.e. `./gradlew jar`)
 4. Execute `ppd` script with the right arguments.
-
-- For the sender use: `ppd -S --mtu 20`
-- For the receiver use: `ppd -R --mtu 20`
-
-### Command Manual
-
-```
-NAME
-
-  ppd - penny plain data link protocol
-
-SYNOPSIS
-
-  ppd -[S|R] --mtu [N]
-
-DESCRIPTION
-
-  send or receive messages using penny plain data link protocol
-
-  -[S|R]
-         The type of runner this host is:
-           S = Message Sender
-           R = Message Receiver
-
-  --mtu [N]
-         The maximum transfer unit (MTU)
-           A non-negative decimal value.
-```
+   - For the sender use: `ppd -S --mtu 20`
+   - For the receiver use: `ppd -R --mtu 20`
 
 ___
