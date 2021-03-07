@@ -20,8 +20,8 @@ DESCRIPTION
   
   -[S|R]
          The type of runner this host is:
-           S = Message Sender
-           R = Message Receiver
+           S = Message sender
+           R = Message receiver
 
   --mtu [N]
          The maximum transfer unit (MTU)
@@ -32,7 +32,7 @@ DESCRIPTION
 
 USAGE EXAMPLE
 
-  ppd -R --mtu 20  # Run PPD as a sender host with MTU of 20
+  ppd -S --mtu 20  # Run PPD as a sender host with MTU of 20
   ppd -R --mtu 20  # Run PPD as a receiver host with MTU of 20
 ```
 
@@ -42,7 +42,7 @@ There are a couple of ways to use this implementation:
 
 #### 1. Simply calling the command with the right argument and providing manual input
 
-```
+```sh
 ppd -S --mtu 20 # Run PPD as a sender host with MTU of 20
 hello           # => [F~05~hello~39]
 
@@ -52,19 +52,37 @@ ppd -R --mtu 20 # Run PPD as a receiver host with MTU of 20
 
 #### 2. Redirect the command standard input to a text file containing the frames/message
 
-```
+```sh
 ppd -S --mtu 20 < message.txt # sender encodes message text based on ppd specification 
 ppd -R --mtu 20 < frames.txt  # receiver decodes frames text based on ppd specification
 ```
 
 #### 3. Pipe the sender standard output to the receiver standard input
 
-```
+```sh
 ppd -S --mtu 20 | ppd -R --mtu 20  # Sender will pipe the frame to receiver and receiver will decode the frame
 hello                              # => hello
 
 # You can also pipe a text file as sender input:
 cat message.txt | ppd -S --mtu 20 | ppd -R --mtu 20 
+```
+
+#### 4. Communication across network services 
+
+Say we have a network service called `www.ppd.io`, and that server supports our PPD protocol.
+The server exposes 2 ports with the following behaviour:
+
+- TCP port `63333`: A PPD encoding sender service with an MTU of 20   
+- TCP port `63344`: A PPD decoding receiver service with an MTU of 20
+
+We can then use our host and [netcat](https://en.wikipedia.org/wiki/Netcat) command to emulate active communication between our host, and the PPD server as follows:  
+
+```sh
+# Sending a message to www.ppd.io receiver:
+echo "hello" | ppd -S --mtu 20 | nc www.ppd.io 63344  # => hello
+
+# Receiving a message from the www.ppd.io sender:
+echo "hello" | nc www.ppd.io 63333 | ppd -R --mtu 20  # => hello
 ```
 
 ### Specification
