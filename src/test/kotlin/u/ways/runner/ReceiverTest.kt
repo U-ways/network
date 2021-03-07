@@ -4,6 +4,7 @@ import io.mockk.every
 import io.mockk.mockkClass
 import io.mockk.verify
 import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldContain
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -14,12 +15,14 @@ import org.junit.jupiter.params.provider.MethodSource
 import u.ways.frame.Frame
 import u.ways.frame.Frame.Checksum.calculate
 import u.ways.frame.Frame.Companion.FRAME_OVERHEAD
+import u.ways.frame.Frame.Delimiter.FIELD
+import u.ways.frame.Frame.Delimiter.START
+import u.ways.frame.Type
 import u.ways.frame.Type.F
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
 import java.util.*
 import java.util.stream.Stream
-
 
 class ReceiverTest {
     private val standardOut = System.out
@@ -70,7 +73,7 @@ class ReceiverTest {
             Receiver(mtu, scanner).start()
         }
 
-        exception.message shouldBeEqualTo "Frame length of [${frame.length}] is larger provided mtu of [$mtu]"
+        exception.message!! shouldContain "Frame length of [${frame.length}] is larger than the provided mtu of [$mtu]"
     }
 
     @Test
@@ -83,7 +86,7 @@ class ReceiverTest {
             Receiver(20, scanner).start()
         }
 
-        exception.message shouldBeEqualTo "Illegal Frame Start [${frame[0]}]"
+        exception.message!! shouldContain "Illegal start of Frame. Expected [${START}], actual [${frame[0]}]"
     }
 
     @Test
@@ -96,7 +99,7 @@ class ReceiverTest {
             Receiver(20, scanner).start()
         }
 
-        exception.message shouldBeEqualTo "Illegal Frame Type [${frame[1]}]"
+        exception.message shouldBeEqualTo "Illegal Frame Type. Expected [$F or ${Type.D}], actual [${frame[1]}]."
     }
 
     @Test
@@ -109,11 +112,11 @@ class ReceiverTest {
             Receiver(20, scanner).start()
         }
 
-        exception.message shouldBeEqualTo "Illegal Field Delimiter [${frame[2]}]"
+        exception.message shouldBeEqualTo "Illegal first field delimiter. Expected [$FIELD], actual [${frame[2]}]."
     }
 
     @Test
-    fun `given frame with un-parsable segment length, when receiver extracts frame, it should throw IllegalStateException`() {
+    fun `given frame with corrupt segment length, when receiver extracts frame, it should throw IllegalStateException`() {
         val frame = "[F~XX~hello~39]"
 
         every { scanner.nextLine() } returns frame
@@ -122,7 +125,11 @@ class ReceiverTest {
             Receiver(20, scanner).start()
         }
 
-        exception.message shouldBeEqualTo "Corrupt segment length: [${frame.substring(3..4)}]."
+        exception.message shouldBeEqualTo "Corrupt segment length. Expected an integer number, actual [${
+            frame.substring(
+                3..4
+            )
+        }]."
     }
 
     @Test
@@ -135,11 +142,24 @@ class ReceiverTest {
             Receiver(20, scanner).start()
         }
 
-        exception.message shouldBeEqualTo "Illegal Field Delimiter [${frame[5]}]"
+        exception.message shouldBeEqualTo "Illegal second field delimiter. Expected [$FIELD], actual [${frame[5]}]."
     }
 
     @Test
     fun `given frame with incorrect field delimiter 3, when receiver extracts frame, it should throw IllegalStateException`() {
+        val frame = "[F~05hello~39]"
+
+        every { scanner.nextLine() } returns frame
+
+        val exception = assertThrows<IllegalStateException>() {
+            Receiver(20, scanner).start()
+        }
+
+        exception.message shouldBeEqualTo "Illegal second field delimiter. Expected [$FIELD], actual [h]."
+    }
+
+    @Test
+    fun `given frame with incorrect checksum, when receiver extracts frame, it should throw IllegalStateException`() {
         val frame = "[F~05~hello~FF]"
         val checksum = "FF"
         val verification = calculate(F, "hello")
@@ -150,7 +170,7 @@ class ReceiverTest {
             Receiver(20, scanner).start()
         }
 
-        exception.message shouldBeEqualTo "Incorrect checksum. (expected [$verification], actual [$checksum])"
+        exception.message shouldBeEqualTo "Incorrect checksum. Expected [$verification], actual [$checksum])."
     }
 
     @Test
@@ -163,7 +183,7 @@ class ReceiverTest {
             Receiver(20, scanner).start()
         }
 
-        exception.message shouldBeEqualTo "Illegal Frame End [${frame.last()}]"
+        exception.message shouldBeEqualTo "Illegal end of Frame. Expected [${Frame.Delimiter.END}], actual [${frame.last()}]."
     }
 
     @ParameterizedTest

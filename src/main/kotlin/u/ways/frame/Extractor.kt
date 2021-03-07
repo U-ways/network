@@ -8,53 +8,26 @@ import u.ways.frame.Type.*
 
 object Extractor {
     fun extract(frame: String, mtu: Int): Pair<String, Boolean> {
-        /** MTU limit *************************************************************************************************/
+        check(frame.length <= mtu) { "Frame length of [${frame.length}] is larger than the provided mtu of [$mtu]." }
 
-        check(frame.length <= mtu) { "Frame length of [${frame.length}] is larger provided mtu of [$mtu]" }
-
-        /** START delimiter *******************************************************************************************/
-
-        check(frame[0] == START) { "Illegal Frame Start [${frame[0]}]" }
-
-        /** FRAME type ************************************************************************************************/
-
-        check(frame[1] == "$F"[0] || frame[1] == "$D"[0]) { "Illegal Frame Type [${frame[1]}]" }
-
-        /** FIELD delimiter 1 *****************************************************************************************/
-
-        check(frame[2] == FIELD) { "Illegal Field Delimiter [${frame[2]}]" }
-
-        /** SEGMENT length ********************************************************************************************/
+        check(frame.first() == START) { "Illegal start of Frame. Expected [$START], actual [${frame.first()}]." }
+        check(frame[1] == "$F"[0] || frame[1] == "$D"[0]) { "Illegal Frame Type. Expected [$F or $D], actual [${frame[1]}]." }
+        check(frame[2] == FIELD) { "Illegal first field delimiter. Expected [$FIELD], actual [${frame[2]}]." }
+        check(frame[5] == FIELD) { "Illegal second field delimiter. Expected [$FIELD], actual [${frame[5]}]." }
+        check(frame.last() == END) { "Illegal end of Frame. Expected [$END], actual [${frame.last()}]." }
 
         val length = frame
             .substring(3..4)
             .toIntOrNull(10)
-            ?: error("Corrupt segment length: [${frame.substring(3..4)}].")
+            ?: error("Corrupt segment length. Expected an integer number, actual [${frame.substring(3..4)}].")
 
-        /** FIELD delimiter 2 *****************************************************************************************/
-
-        check(frame[5] == FIELD) { "Illegal Field Delimiter [${frame[5]}]" }
-
-        /** MESSAGE segment *******************************************************************************************/
+        check(frame[length + 6] == FIELD) { "Illegal third field delimiter. Expected [$FIELD], actual [${frame[length + 1]}]." }
 
         val message = frame.substring(6..length + 5)
-
-        /** FIELD delimiter 3 *****************************************************************************************/
-
-        check(frame[length + 6] == FIELD) { "Illegal Frame Delimiter [${frame[length + 1]}]" }
-
-        /** CHECKSUM hexadecimal **************************************************************************************/
-
         val checksum = frame.substring(length + 7..length + 8)
         val verification = calculate(valueOf(frame[1].toString()), message)
 
-        check(verification == checksum) { "Incorrect checksum. (expected [$verification], actual [$checksum])" }
-
-        /** END delimiter *********************************************************************************************/
-
-        check(frame.last() == END) { "Illegal Frame End [${frame.last()}]" }
-
-        /** RESULT ****************************************************************************************************/
+        check(verification == checksum) { "Incorrect checksum. Expected [$verification], actual [$checksum])." }
 
         return Pair(message, frame[1] == "$F"[0])
     }
