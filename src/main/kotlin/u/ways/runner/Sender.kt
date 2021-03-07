@@ -33,19 +33,25 @@ class Sender(
             else when {
                 FRAME_OVERHEAD + length <= mtu -> println(Frame(this))
                 else -> {
-                    val numberOfFrames = ceil(length / (mtu.toDouble() - FRAME_OVERHEAD)).toInt()
+                    val sb = StringBuilder(length)
+                    val frames = (0 until ceil(length / (mtu.toDouble() - FRAME_OVERHEAD)).toInt())
 
-                    (0 until numberOfFrames).forEach { n ->
-                        val lastFrame = n == numberOfFrames - 1
-                        val start = n.times(mtu.minus(FRAME_OVERHEAD))
-                        val end = start.plus(
-                            if (lastFrame && length % mtu != 0)
-                                length - ((numberOfFrames - 1) * mtu.minus(FRAME_OVERHEAD))
-                            else
-                                mtu.minus(FRAME_OVERHEAD)
-                        )
-                        println(Frame(substring(start, end), if (lastFrame) F else D))
-                    }
+                    frames
+                        .minus(frames.last)
+                        .forEach { n ->
+                            val start = n.times(mtu.minus(FRAME_OVERHEAD))
+                            val end = start.plus(mtu.minus(FRAME_OVERHEAD))
+                            sb.append(Frame(substring(start, end), D))
+                            sb.append(System.lineSeparator())
+                        }
+                        .also {
+                            val start = frames.last.times(mtu.minus(FRAME_OVERHEAD))
+                            val end = start.plus(
+                                if (length % mtu != 0) length - ((frames.last) * mtu.minus(FRAME_OVERHEAD))
+                                else mtu.minus(FRAME_OVERHEAD)
+                            )
+                            println(sb.append(Frame(substring(start, end), F)))
+                        }
                 }
             }
         }
