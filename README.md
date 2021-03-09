@@ -2,6 +2,17 @@
 
 A simple data link protocol that implements framing, error detection, message segmentation and reassembly.
 
+### Table of Content
+
+- [Command Manual](#command-manual)
+- [Usage Example](#usage-example)
+  - [1. Simply calling the command with the right argument and providing manual input](#1-simply-calling-the-command-with-the-right-argument-and-providing-manual-input)
+  - [2. Redirect the command standard input to a text file containing the frames/message](#2-redirect-the-command-standard-input-to-a-text-file-containing-the-framesmessage)
+  - [3. Pipe the sender standard output to the receiver standard input](#3-pipe-the-sender-standard-output-to-the-receiver-standard-input)
+  - [4. Communication across network services](#4-communication-across-network-services)
+- [Specification](#specification)
+- [How To Compile The Project and Run The Protocol](#how-to-compile-the-project-and-run-the-protocol)
+
 ### Command Manual
 
 ```
@@ -139,8 +150,7 @@ message normally.
 
 1. In the terminal, navigate to root directory for this project. (i.e. `cd path/to/penny-plain-dlp`)
 2. Execute `install` script. (i.e. `./install`)
-3. Run jar command to create a new archive. (i.e. `./gradlew jar`)
-4. Execute `ppd` script with the right arguments.
+3. Execute `ppd` script with the right arguments.
    - For the sender use: `ppd -S --mtu 20`
    - For the receiver use: `ppd -R --mtu 20`
 
